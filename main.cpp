@@ -763,13 +763,13 @@ void HandleNetwork() {
 }
 
 // ======== Main ========
+#ifdef _WIN32
+    extern "C" { __declspec(dllexport) unsigned long NvOptimusEnablement = 1; }
+#endif
+
 int main() {
     // Disabled MSAA for faster startup on Intel GPUs
     // SetConfigFlags(FLAG_MSAA_4X_HINT);
-    // Force NVIDIA discrete GPU on Optimus laptops
-    #ifdef _WIN32
-        extern "C" { __declspec(dllexport) unsigned long NvOptimusEnablement = 1; }
-    #endif
     InitWindow(SCREEN_W, SCREEN_H, WINDOW_TITLE);
     SetTargetFPS(60);
     InitAudioDevice();
