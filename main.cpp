@@ -9,6 +9,12 @@
     #include <windows.h>
 #endif
 
+// Rename raylib functions that conflict with Win32 API functions
+#ifdef _WIN32
+    #define CloseWindow  __raylib_CloseWindow
+    #define ShowCursor   __raylib_ShowCursor
+#endif
+
 #include <raylib.h>
 #undef BLACK
 #undef WHITE
@@ -45,11 +51,10 @@
 #include <cstring>
 #include <vector>
 #ifdef _WIN32
+    #undef DrawText
     #undef DrawTextEx
     #undef LoadImage
-#endif
-
-#ifdef _WIN32
+    // Restore CloseWindow and ShowCursor after raylib's declarations
     #undef CloseWindow
     #undef ShowCursor
 #endif
@@ -957,6 +962,8 @@ int main() {
     UnloadSound(sndPlace);
     UnloadSound(sndHover);
     CloseAudioDevice();
+#ifndef _WIN32
     CloseWindow();
+#endif
     return 0;
 }
