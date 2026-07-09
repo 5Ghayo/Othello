@@ -10,6 +10,12 @@
 #undef GREEN
 #undef RED
 #undef MAROON
+#ifdef _WIN32
+    #undef DrawTextEx
+    #undef CloseWindow
+    #undef ShowCursor
+    #undef LoadImage
+#endif
 
 #include "board.h"
 #include "ai.h"
