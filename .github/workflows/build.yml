@@ -42,6 +42,25 @@ jobs:
           New-Item -ItemType Directory -Force -Path $dist
           Copy-Item "build/Release/othello.exe" -Destination $dist/
           Copy-Item -Recurse "assets" -Destination $dist/
+          # Bundle all required DLLs from vcpkg
+          $dllDirs = @(
+            "build/vcpkg_installed/x64-windows/bin",
+            "build/vcpkg_installed/x64-windows/debug/bin"
+          )
+          $copied = @()
+          foreach ($dir in $dllDirs) {
+            if (Test-Path $dir) {
+              Get-ChildItem -Path $dir -Filter "*.dll" | ForEach-Object {
+                Copy-Item $_.FullName -Destination "$dist/"
+                $copied += $_.Name
+              }
+            }
+          }
+          if ($copied.Count -gt 0) {
+            Write-Host "Bundled DLLs: $($copied -join ', ')"
+          } else {
+            Write-Host "Warning: No DLLs found to bundle"
+          }
           Compress-Archive -Path "$dist/*" -DestinationPath "Othello-Windows.zip"
 
       - name: Upload artifact
