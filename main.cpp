@@ -780,9 +780,9 @@ int main() {
     // Specific CJK characters used in the UI
     int neededChars[] = {19968,19978,20013,20027,20154,20214,20301,20313,20320,20363,20445,20505,20808,20837,20856,20877,20986,20987,21019,21040,21097,21152,21160,21333,21462,21475,21512,22238,22256,22312,22320,22336,22812,22823,23376,23384,23458,23478,23545,23616,24050,24179,24182,24314,24328,24335,24453,24605,24724,25103,25112,25143,25151,25163,25214,25509,25773,25918,25968,25991,26041,26080,26263,26368,26408,26410,26412,26426,26469,26827,27169,27425,27493,27861,28040,28216,28857,29609,30333,30340,30424,31245,31471,31561,31616,32423,32463,32476,32511,32593,32622,32771,32988,33258,33719,33756,33853,35748,35753,35774,35831,35889,36136,36339,36755,36798,36807,36820,36830,36864,38388,38590,39064,39640,40657};
     for (int cp : neededChars) cps.push_back(cp);
-    // Common symbols
-    for (int i = 0x3000; i <= 0x303F; i++) cps.push_back(i); // CJK Symbols
-    for (int i = 0xFF00; i <= 0xFFEF; i++) cps.push_back(i); // Fullwidth forms
+    // Common symbols used in the UI
+    int extraSymbols[] = {0x3001, 0x3002, 0x300A, 0x300B, 0xFF08, 0xFF09, 0xFF0C, 0xFF01, 0xFF1A};
+    for (int cp : extraSymbols) cps.push_back(cp);
 
     gameFont = LoadFontEx(fp.c_str(), 48, cps.data(), (int)cps.size());
     if (gameFont.texture.id == 0) {
@@ -810,11 +810,7 @@ int main() {
     // Load theme textures
     LoadThemeTextures();
 
-    // Load icon
-    std::string iconPath = GetApplicationDirectory();
-    iconPath += "reference/ece-othello/images/icon.ico";
-    Image icn = LoadImage(iconPath.c_str());
-    if (icn.data != nullptr) { SetWindowIcon(icn); UnloadImage(icn); }
+
 
     bool gameOverShown = false;
 
