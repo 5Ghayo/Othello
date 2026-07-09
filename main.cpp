@@ -20,9 +20,14 @@
 
 #include <string>
 #include <vector>
-#include <ifaddrs.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#ifdef _WIN32
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+#else
+    #include <ifaddrs.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+#endif
 #include <deque>
 #include <cmath>
 #include <cstdio>
@@ -77,6 +82,25 @@ static std::string netSetupError = "";
 static double netErrorTimer = 0;
 
 static std::string getLocalIP() {
+#ifdef _WIN32
+    // Windows: use gethostname + getaddrinfo
+    char hostname[256];
+    if (gethostname(hostname, sizeof(hostname)) == 0) {
+        struct addrinfo hints, *info = NULL;
+        memset(&hints, 0, sizeof(hints));
+        hints.ai_family = AF_INET;
+        hints.ai_socktype = SOCK_STREAM;
+        if (getaddrinfo(hostname, NULL, &hints, &info) == 0 && info) {
+            struct sockaddr_in *addr = (struct sockaddr_in *)info->ai_addr;
+            char buf[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, &addr->sin_addr, buf, sizeof(buf));
+            std::string ip(buf);
+            freeaddrinfo(info);
+            if (ip != "127.0.0.1") return ip;
+        }
+    }
+    return "127.0.0.1";
+#else
     struct ifaddrs *ifaddr, *ifa;
     std::string ip = "127.0.0.1";
     if (getifaddrs(&ifaddr) == -1) return ip;
@@ -92,6 +116,7 @@ static std::string getLocalIP() {
     }
     freeifaddrs(ifaddr);
     return ip;
+#endif
 }
 
 // Flip animation

@@ -16,6 +16,7 @@
     #include <netdb.h>
     #include <errno.h>
     #include <fcntl.h>
+    #define closesocket close
     #define SOCKET_ERROR -1
     #define INVALID_SOCKET -1
     typedef int SOCKET;
@@ -62,11 +63,11 @@ bool NetworkSession::startServer(int port) {
     addr.sin_port = htons(port);
 
     if (::bind(sock, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-        lastError = "Bind failed"; close(sock); sock = -1; role = NONE; return false;
+        lastError = "Bind failed"; closesocket(sock); sock = -1; role = NONE; return false;
     }
 
     if (listen(sock, 1) < 0) {
-        lastError = "Listen failed"; close(sock); sock = -1; role = NONE; return false;
+        lastError = "Listen failed"; closesocket(sock); sock = -1; role = NONE; return false;
     }
 
     // Accept one client (blocking, but we'll set short timeout)
@@ -74,7 +75,7 @@ bool NetworkSession::startServer(int port) {
     socklen_t addrLen = sizeof(clientAddr);
     clientSock = (int)accept(sock, (struct sockaddr*)&clientAddr, &addrLen);
     if (clientSock < 0) {
-        lastError = "Accept failed"; close(sock); sock = -1; role = NONE; return false;
+        lastError = "Accept failed"; closesocket(sock); sock = -1; role = NONE; return false;
     }
 
     // Set receive timeout
@@ -83,7 +84,7 @@ bool NetworkSession::startServer(int port) {
     tv.tv_usec = 500000; // 500ms
     setsockopt(clientSock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
 
-    close(sock); // Don't need listener anymore
+    closesocket(sock); // Don't need listener anymore
     sock = -1;
     connected = true;
     localColor = CELL_BLACK; // Server is black
@@ -107,16 +108,21 @@ bool NetworkSession::startListening(int port) {
     addr.sin_port = htons(port);
 
     if (::bind(sock, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-        lastError = "Bind failed"; close(sock); sock = -1; role = NONE; return false;
+        lastError = "Bind failed"; closesocket(sock); sock = -1; role = NONE; return false;
     }
 
     if (listen(sock, 1) < 0) {
-        lastError = "Listen failed"; close(sock); sock = -1; role = NONE; return false;
+        lastError = "Listen failed"; closesocket(sock); sock = -1; role = NONE; return false;
     }
 
     // Non-blocking: accept() returns immediately if no client
+#ifdef _WIN32
+    u_long mode = 1;
+    ioctlsocket(sock, FIONBIO, &mode);
+#else
     int flags = fcntl(sock, F_GETFL, 0);
     fcntl(sock, F_SETFL, flags | O_NONBLOCK);
+#endif
 
     connected = false;
     clientSock = -1;
@@ -137,7 +143,11 @@ bool NetworkSession::acceptConnection() {
     tv.tv_usec = 500000;
     setsockopt(clientSock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
 
-    close(sock);
+#ifdef _WIN32
+    closesocket(sock);
+#else
+    closesocket(sock);
+#endif
     sock = -1;
     connected = true;
     return true;
@@ -157,12 +167,12 @@ bool NetworkSession::connectToHost(const std::string& host, int port) {
 
     struct hostent* he = gethostbyname(host.c_str());
     if (he == nullptr) {
-        lastError = "DNS lookup failed"; close(clientSock); clientSock = -1; role = NONE; return false;
+        lastError = "DNS lookup failed"; closesocket(clientSock); clientSock = -1; role = NONE; return false;
     }
     memcpy(&addr.sin_addr, he->h_addr, he->h_length);
 
     if (connect(clientSock, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-        lastError = "Connection failed"; close(clientSock); clientSock = -1; role = NONE; return false;
+        lastError = "Connection failed"; closesocket(clientSock); clientSock = -1; role = NONE; return false;
     }
 
     struct timeval tv;
@@ -181,7 +191,7 @@ void NetworkSession::disconnect() {
 #ifdef _WIN32
         closesocket(clientSock);
 #else
-        close(clientSock);
+        closesocket(clientSock);
 #endif
         clientSock = -1;
     }
@@ -189,7 +199,7 @@ void NetworkSession::disconnect() {
 #ifdef _WIN32
         closesocket(sock);
 #else
-        close(sock);
+        closesocket(sock);
 #endif
         sock = -1;
     }
