@@ -1,3 +1,7 @@
+#ifdef _WIN32
+    #define WIN32_LEAN_AND_MEAN
+    #define NOMINMAX
+#endif
 #include <raylib.h>
 #undef BLACK
 #undef WHITE
@@ -10,12 +14,6 @@
 #undef GREEN
 #undef RED
 #undef MAROON
-#ifdef _WIN32
-    #undef DrawTextEx
-    #undef CloseWindow
-    #undef ShowCursor
-    #undef LoadImage
-#endif
 
 #include "board.h"
 #include "ai.h"
@@ -49,7 +47,12 @@ constexpr int BOARD_X = 80;
 constexpr int BOARD_Y = 90;
 constexpr int CELL_SIZE = 72;
 constexpr int BOARD_PX = CELL_SIZE * BOARD_SIZE;
-
+#ifdef _WIN32
+    #undef DrawTextEx
+    #undef CloseWindow
+    #undef ShowCursor
+    #undef LoadImage
+#endif
 // raylib color literals (macros were undefined above)
 #define RAYWHITE_ Color{255,255,255,255}
 #define GOLD_ Color{255,215,0,255}
