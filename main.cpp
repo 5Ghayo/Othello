@@ -2,7 +2,13 @@
     #define WIN32_LEAN_AND_MEAN
     #define NOMINMAX
     #define NOGDI
+    // Include winsock2.h BEFORE windows.h (standard Windows requirement)
+    #include <winsock2.h>
+    // Include windows.h first so Win32 API functions (CloseWindow, ShowCursor, etc.)
+    // are declared with their ORIGINAL names in the global namespace.
+    #include <windows.h>
 #endif
+
 #include <raylib.h>
 #undef BLACK
 #undef WHITE
@@ -15,10 +21,6 @@
 #undef GREEN
 #undef RED
 #undef MAROON
-#ifdef _WIN32
-    #undef CloseWindow
-    #undef ShowCursor
-#endif
 
 #include "board.h"
 #include "ai.h"
@@ -45,6 +47,11 @@
 #ifdef _WIN32
     #undef DrawTextEx
     #undef LoadImage
+#endif
+
+#ifdef _WIN32
+    #undef CloseWindow
+    #undef ShowCursor
 #endif
 
 // ======== Constants ========
