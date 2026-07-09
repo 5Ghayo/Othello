@@ -51,7 +51,8 @@ add_executable(othello ${SOURCES})
 
 if(WIN32)
     # Windows-specific: hide console window, link ws2_32
-    set_target_properties(othello PROPERTIES WIN32_EXECUTABLE TRUE)
+    # WIN32_EXECUTABLE would hide the console but needs WinMain entry point
+    # Our code uses standard main(), so we skip this and accept a console window.
     target_link_libraries(othello PRIVATE raylib winmm ws2_32)
 else()
     target_link_libraries(othello PRIVATE raylib)
