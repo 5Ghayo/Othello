@@ -7,10 +7,12 @@
     // Include windows.h first so Win32 API functions (CloseWindow, ShowCursor, etc.)
     // are declared with their ORIGINAL names in the global namespace.
     #include <windows.h>
-#endif
-
-// Rename raylib functions that conflict with Win32 API functions
-#ifdef _WIN32
+    // Undef Win32 macros BEFORE raylib.h, so raylib's function declarations
+    // (DrawText, DrawTextEx, LoadImage) keep their original names.
+    #undef DrawText
+    #undef DrawTextEx
+    #undef LoadImage
+    // Rename raylib functions that have same name as Win32 API functions.
     #define CloseWindow  __raylib_CloseWindow
     #define ShowCursor   __raylib_ShowCursor
 #endif
@@ -51,10 +53,11 @@
 #include <cstring>
 #include <vector>
 #ifdef _WIN32
+    // Safety undefs for any remaining macro definitions
     #undef DrawText
     #undef DrawTextEx
     #undef LoadImage
-    // Restore CloseWindow and ShowCursor after raylib's declarations
+    // Restore CloseWindow and ShowCursor after raylib.h was processed
     #undef CloseWindow
     #undef ShowCursor
 #endif
