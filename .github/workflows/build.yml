@@ -1,0 +1,74 @@
+name: Build Othello
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["*"]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install raylib (vcpkg)
+        run: |
+          vcpkg install raylib:x64-windows
+          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" >> $env:GITHUB_ENV
+
+      - name: Configure CMake
+        run: |
+          cmake -B build -S . `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake"
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Package
+        run: |
+          $dist = "Othello-Windows"
+          New-Item -ItemType Directory -Force -Path $dist
+          Copy-Item "build/Release/othello.exe" -Destination $dist/
+          Copy-Item -Recurse "assets" -Destination $dist/
+          Compress-Archive -Path "$dist/*" -DestinationPath "Othello-Windows.zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Othello-Windows
+          path: Othello-Windows.zip
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install raylib
+
+      - name: Build
+        run: |
+          cd ${{ github.workspace }}
+          make clean
+          make -j4
+
+      - name: Package
+        run: |
+          DIST="Othello-macOS"
+          mkdir -p "$DIST"
+          cp othello "$DIST/"
+          cp -r assets "$DIST/"
+          zip -r Othello-macOS.zip "$DIST"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Othello-macOS
+          path: Othello-macOS.zip

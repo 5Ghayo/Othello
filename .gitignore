@@ -1,0 +1,8 @@
+*.o
+*.bak
+.DS_Store
+othello
+code-research.md
+othello-engineering-plan.md
+othello-spec.md
+reference/
