@@ -17,25 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup vcpkg
-        run: |
-          if (-not (Test-Path "C:\vcpkg\vcpkg.exe")) {
-            Write-Host "Cloning vcpkg..."
-            git clone https://github.com/Microsoft/vcpkg.git C:\vcpkg
-            & "C:\vcpkg\bootstrap-vcpkg.bat" -disableMetrics
-          }
-
-      - name: Install raylib
-        run: C:\vcpkg\vcpkg install raylib:x64-windows-static --classic
-
-      - name: Clean build directory
-        run: Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue
-
       - name: Configure CMake
-        run: |
-          cmake -B build -S . -DCMAKE_BUILD_TYPE=Release `
-            -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" `
-            -DVCPKG_TARGET_TRIPLET=x64-windows-static
+        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         run: cmake --build build --config Release
@@ -44,9 +27,8 @@ jobs:
         run: |
           $dist = "Othello-Windows"
           New-Item -ItemType Directory -Force -Path $dist
-          Copy-Item "build/Release/othello.exe" -Destination $dist/
+          Copy-Item "build/Release/*.exe", "build/Release/*.dll" -Destination $dist/
           Copy-Item -Recurse "assets" -Destination $dist/
-
           Compress-Archive -Path "$dist/*" -DestinationPath "Othello-Windows.zip"
 
       - name: Upload artifact
