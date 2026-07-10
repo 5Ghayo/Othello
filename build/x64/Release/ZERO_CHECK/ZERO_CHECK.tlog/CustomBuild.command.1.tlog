@@ -1,0 +1,10 @@
+^D:\CODE\OTHELLO\BUILD\CMAKEFILES\1EA9B4EAADF2377A895A1111DB245364\GENERATE.STAMP.RULE
+setlocal
+"D:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SD:/code/Othello -BD:/code/Othello/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file D:/code/Othello/build/Othello.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

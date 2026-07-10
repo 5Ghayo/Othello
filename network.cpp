@@ -220,7 +220,7 @@ bool NetworkSession::recvRaw(std::string& data, int timeoutMs) {
 
     // Read 4-byte length prefix
     uint32_t netLen;
-    int n = (int)recv(clientSock, (char*)&netLen, 4, MSG_PEEK);
+    int n = (int)recv(clientSock, (char*)&netLen, 4, 0);
     if (n <= 0) return false;
 
     uint32_t msgLen = ntohl(netLen);
