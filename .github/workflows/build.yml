@@ -1,4 +1,4 @@
-﻿name: Build Othello
+name: Build Othello
 
 on:
   push:
@@ -17,8 +17,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup vcpkg
+        run: |
+          if (-not (Test-Path "C:\vcpkg\vcpkg.exe")) {
+            Write-Host "Cloning vcpkg..."
+            git clone https://github.com/Microsoft/vcpkg.git C:\vcpkg
+            & "C:\vcpkg\bootstrap-vcpkg.bat" -disableMetrics
+          }
+
       - name: Configure CMake
-        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+        run: |
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake"
 
       - name: Build
         run: cmake --build build --config Release
@@ -26,9 +36,12 @@ jobs:
       - name: Package
         run: |
           $dist = "Othello-Windows"
-          New-Item -ItemType Directory -Force -Path $dist
-          Copy-Item "build/Release/*.exe", "build/Release/*.dll" -Destination $dist/
-          Copy-Item -Recurse "assets" -Destination $dist/
+          New-Item -ItemType Directory -Force -Path "$dist"
+          Copy-Item "build/Release/*.exe", "build/Release/*.dll" -Destination "$dist/"
+          Copy-Item -Recurse "assets" -Destination "$dist/"
+          Get-ChildItem "build/vcpkg_installed/*/bin/*.dll" -ErrorAction SilentlyContinue | ForEach-Object {
+            Copy-Item $_.FullName -Destination "$dist/"
+          }
           Compress-Archive -Path "$dist/*" -DestinationPath "Othello-Windows.zip"
 
       - name: Upload artifact

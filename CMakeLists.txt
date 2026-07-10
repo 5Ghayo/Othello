@@ -65,10 +65,14 @@ if(WIN32)
     # raylib handles WinMain->main mapping internally, so WIN32_EXECUTABLE would work.
     # Console window kept for debug output during development.
     if(TARGET raylib::raylib)
-        # vcpkg/system install: use imported target (auto-links GLFW etc.)
+        # vcpkg/system install: use imported target
         target_link_libraries(othello PRIVATE raylib::raylib winmm ws2_32)
+    elseif(MSVC)
+        # MSVC auto-download: raylib.lib is static (no GLFW). Use raylibdll.lib
+        # import library instead 鈫?GLFW resolved through raylib.dll at runtime
+        target_link_libraries(othello PRIVATE raylibdll winmm ws2_32)
     else()
-        # Auto-download or local: link against library file directly
+        # MinGW auto-download: libraylib.a is static with GLFW built in
         target_link_libraries(othello PRIVATE raylib winmm ws2_32)
     endif()
 else()
