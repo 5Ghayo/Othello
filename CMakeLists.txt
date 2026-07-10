@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.15)
 project(Othello LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -64,10 +64,19 @@ if(WIN32)
     # Windows-specific: link multimedia and winsock libraries
     # raylib handles WinMain->main mapping internally, so WIN32_EXECUTABLE would work.
     # Console window kept for debug output during development.
-    target_link_libraries(othello PRIVATE raylib winmm ws2_32)
+    if(TARGET raylib::raylib)
+        # vcpkg/system install: use imported target (auto-links GLFW etc.)
+        target_link_libraries(othello PRIVATE raylib::raylib winmm ws2_32)
+    else()
+        # Auto-download or local: link against library file directly
+        target_link_libraries(othello PRIVATE raylib winmm ws2_32)
+    endif()
 else()
-
-    target_link_libraries(othello PRIVATE raylib)
+    if(TARGET raylib::raylib)
+        target_link_libraries(othello PRIVATE raylib::raylib)
+    else()
+        target_link_libraries(othello PRIVATE raylib)
+    endif()
 endif()
 
 # MSVC: treat source files as UTF-8 (supports CJK in UTF-8 no-BOM source)
