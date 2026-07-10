@@ -17,17 +17,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup vcpkg
+      - name: Download raylib (official MSVC release)
         run: |
-          if (-not (Test-Path "C:\vcpkg\vcpkg.exe")) {
-            Write-Host "Cloning vcpkg..."
-            git clone https://github.com/Microsoft/vcpkg.git C:\vcpkg
-            & "C:\vcpkg\bootstrap-vcpkg.bat" -disableMetrics
-          }
+          curl -L -o raylib.zip https://github.com/raysan5/raylib/releases/download/5.5/raylib-5.5_win64_msvc16.zip
+          Expand-Archive -Path raylib.zip -DestinationPath raylib_extracted -Force
+          New-Item -ItemType Directory -Force -Path lib/raylib
+          Copy-Item -Recurse "raylib_extracted/raylib-5.5_win64_msvc16/*" -Destination lib/raylib/
 
       - name: Configure CMake
-        run: |
-          cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake"
+        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         run: cmake --build build --config Release
@@ -38,9 +36,6 @@ jobs:
           New-Item -ItemType Directory -Force -Path "$dist"
           Copy-Item "build/Release/*.exe", "build/Release/*.dll" -Destination "$dist/"
           Copy-Item -Recurse "assets" -Destination "$dist/"
-          Get-ChildItem "build/vcpkg_installed/*/bin/*.dll" -ErrorAction SilentlyContinue | ForEach-Object {
-            Copy-Item $_.FullName -Destination "$dist/"
-          }
           Compress-Archive -Path "$dist/*" -DestinationPath "Othello-Windows.zip"
 
       - name: Upload artifact
