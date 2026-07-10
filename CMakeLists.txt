@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Try finding raylib via vcpkg or system package
 find_package(raylib QUIET)
+find_package(glfw3 CONFIG QUIET)
 
 if(raylib_FOUND)
     message(STATUS "Using raylib: ${raylib_VERSION}")
@@ -67,13 +68,13 @@ if(WIN32)
     if(TARGET raylib::raylib)
         # vcpkg/system install: use imported target
         target_link_libraries(othello PRIVATE raylib::raylib winmm ws2_32)
-    elseif(MSVC)
-        # MSVC auto-download: raylib.lib is static (no GLFW). Use raylibdll.lib
-        # import library instead 鈫?GLFW resolved through raylib.dll at runtime
-        target_link_libraries(othello PRIVATE raylibdll winmm ws2_32)
     else()
-        # MinGW auto-download: libraylib.a is static with GLFW built in
+        # Auto-download or local: raylib.lib includes GLFW statically
         target_link_libraries(othello PRIVATE raylib winmm ws2_32)
+    endif()
+    # vcpkg raylib::raylib may not include GLFW transitively, link explicitly
+    if(TARGET glfw3::glfw3)
+        target_link_libraries(othello PRIVATE glfw3::glfw3)
     endif()
 else()
     if(TARGET raylib::raylib)
