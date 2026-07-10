@@ -1,7 +1,10 @@
 *.o
 *.bak
+build/
+build_*/
 .DS_Store
 othello
+*.exe
 code-research.md
 othello-engineering-plan.md
 othello-spec.md

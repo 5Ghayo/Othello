@@ -1,3 +1,0 @@
-D:/code/Othello/build_mingw/CMakeFiles/othello.dir
-D:/code/Othello/build_mingw/CMakeFiles/edit_cache.dir
-D:/code/Othello/build_mingw/CMakeFiles/rebuild_cache.dir
